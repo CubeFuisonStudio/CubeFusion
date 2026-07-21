@@ -1,1 +1,1317 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CubeFusion — студия разработки</title>
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ===== БАЗА ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Geologica', sans-serif;
+            background: #0a0a12;
+            padding-top: 76px;
+            overflow-x: hidden;
+            color: #fff;
+        }
+        :root {
+            --primary: #e67e22;
+            --primary-light: #f39c12;
+            --primary-dark: #d35400;
+        }
+
+        /* ===== ПРЕЛОАДЕР ===== */
+        #preloader {
+            position: fixed;
+            inset: 0;
+            background: #0a0a12;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        #preloader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .preloader-logo {
+            font-family: 'Geologica', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #e67e22, #f39c12);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0;
+            animation: preloaderFade 1s ease forwards;
+        }
+        .preloader-logo span {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        @keyframes preloaderFade {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .preloader-particle {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #f39c12;
+            border-radius: 50%;
+            margin: 0 6px;
+            animation: pulse 1.2s ease-in-out infinite;
+        }
+        .preloader-particle:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .preloader-particle:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+            50% {
+                transform: scale(1.5);
+                opacity: 1;
+            }
+        }
+        .preloader-text {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 20px;
+        }
+
+        /* ===== СВЕЧЕНИЕ ===== */
+        #globalGlow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(230, 126, 34, 0.10), rgba(243, 156, 18, 0.04), transparent 70%);
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            mix-blend-mode: screen;
+        }
+        #globalGlow.active {
+            opacity: 1;
+        }
+
+        /* ===== ВИДЕО-ФОН ===== */
+        #bgVideo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* ===== ЧАСТИЦЫ ===== */
+        #particlesCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ===== ШАПКА ===== */
+        .navbar-glass {
+            background: rgba(10, 10, 18, 0.6);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(230, 126, 34, 0.06);
+            transition: all 0.5s ease;
+            z-index: 1000;
+        }
+        .navbar-glass.scrolled {
+            background: rgba(10, 10, 18, 0.85);
+            border-bottom-color: rgba(230, 126, 34, 0.12);
+        }
+        .nav-link-custom {
+            position: relative;
+            color: rgba(255, 255, 255, 0.5) !important;
+            font-weight: 600;
+            font-size: 0.8rem;
+            letter-spacing: 0.8px;
+            padding: 8px 18px !important;
+            border-radius: 50px !important;
+            transition: all 0.4s ease;
+            text-transform: uppercase;
+        }
+        .nav-link-custom::before {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, #e67e22, #f39c12);
+            transition: transform 0.4s ease;
+            border-radius: 2px;
+        }
+        .nav-link-custom:hover::before,
+        .nav-link-custom.active::before {
+            transform: translateX(-50%) scaleX(1);
+        }
+        .nav-link-custom:hover {
+            color: #fff !important;
+            background: rgba(230, 126, 34, 0.06);
+        }
+        .nav-link-custom.active {
+            color: #fff !important;
+            background: rgba(230, 126, 34, 0.08);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #e67e22, #f39c12);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .text-gradient-glow {
+            background: linear-gradient(135deg, #f39c12, #e67e22, #f39c12);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientMove 4s ease-in-out infinite;
+        }
+        @keyframes gradientMove {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* ===== ГЕРОЙ ===== */
+        .hero-section {
+            min-height: calc(100vh - 76px);
+            position: relative;
+            display: flex;
+            align-items: center;
+            z-index: 1;
+        }
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 50%, rgba(10, 10, 18, 0.2) 0%, rgba(10, 10, 18, 0.6) 100%),
+                url('https://via.placeholder.com/1920x1080/1a1a2e/1a1a2e') center/cover no-repeat;
+            filter: blur(2px) brightness(0.8);
+            z-index: 0;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            animation: fadeInUp 1.2s ease forwards;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(60px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .badge-base {
+            background: rgba(230, 126, 34, 0.15);
+            color: #f39c12;
+            border: 1px solid rgba(230, 126, 34, 0.15);
+            padding: 6px 18px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+
+        /* ===== КНОПКИ ===== */
+        .btn-orange {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            border: none;
+            color: #fff;
+            transition: all 0.4s ease;
+            border-radius: 50px !important;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .btn-orange span,
+        .btn-orange i {
+            position: relative;
+            z-index: 2;
+        }
+        .btn-orange:hover {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            transform: translateY(-4px) scale(1.04);
+            box-shadow: 0 20px 60px rgba(230, 126, 34, 0.3);
+            color: #fff;
+        }
+
+        .btn-outline-orange {
+            border: 2px solid rgba(230, 126, 34, 0.35);
+            color: #fff;
+            background: transparent;
+            transition: all 0.5s ease;
+            border-radius: 50px !important;
+        }
+        .btn-outline-orange:hover {
+            border-color: #f39c12;
+            background: rgba(230, 126, 34, 0.08);
+            transform: translateY(-4px) scale(1.04);
+            box-shadow: 0 20px 60px rgba(230, 126, 34, 0.08);
+            color: #fff;
+        }
+
+        /* ===== КАРТОЧКИ ПРОЕКТОВ ===== */
+        .project-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(230, 126, 34, 0.06);
+            border-radius: 24px;
+            padding: 30px 24px;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        .project-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(230, 126, 34, 0.04), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+        .project-card:hover::after {
+            opacity: 1;
+        }
+        .project-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            border-color: rgba(230, 126, 34, 0.2);
+            box-shadow: 0 30px 80px rgba(230, 126, 34, 0.06);
+        }
+        .project-status {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px 14px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+        .project-status.active {
+            background: rgba(46, 204, 113, 0.15);
+            color: #2ecc71;
+            border: 1px solid rgba(46, 204, 113, 0.15);
+        }
+        .project-status.deleted {
+            background: rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.12);
+        }
+        .project-icon {
+            font-size: 2.8rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        /* ===== СТРАНИЦА ПРОЕКТА ===== */
+        .project-page-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(230, 126, 34, 0.06);
+            border-radius: 24px;
+            padding: 30px 30px;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            height: 100%;
+        }
+        .project-page-card:hover {
+            border-color: rgba(230, 126, 34, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(230, 126, 34, 0.05);
+        }
+
+        /* ===== ФРАКЦИИ ===== */
+        .faction-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.3s;
+        }
+        .faction-badge:hover {
+            transform: scale(1.05);
+            border-color: rgba(230, 126, 34, 0.3);
+        }
+
+        /* ===== СЧЁТЧИК СКАЧИВАНИЙ ===== */
+        .download-counter {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 18px 6px 14px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+        .download-counter .num {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        /* ===== FAQ ===== */
+        .faq-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(230, 126, 34, 0.06);
+            border-radius: 16px;
+            padding: 18px 22px;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .faq-card:hover {
+            border-color: rgba(230, 126, 34, 0.2);
+            transform: translateY(-2px);
+        }
+        .faq-card .faq-q {
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-card .faq-q i {
+            color: #f39c12;
+            transition: 0.3s;
+        }
+        .faq-card .faq-a {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+        }
+        .faq-card.open .faq-a {
+            display: block;
+        }
+        .faq-card.open .faq-q i {
+            transform: rotate(180deg);
+        }
+
+        /* ===== СЕКЦИИ ===== */
+        .section-bg {
+            position: relative;
+            z-index: 1;
+        }
+        .section-title {
+            font-size: 2.6rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .anchor-offset {
+            scroll-margin-top: 80px;
+        }
+
+        /* ===== МОДАЛКИ ===== */
+        .discord-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+        .discord-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .discord-modal {
+            background: rgba(16, 16, 32, 0.95);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(230, 126, 34, 0.12);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 440px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.9);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+        .discord-modal-overlay.active .discord-modal {
+            transform: scale(1);
+        }
+        .discord-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .discord-modal-close:hover {
+            color: #fff;
+            transform: rotate(90deg);
+        }
+        .discord-modal .btn-modal-join {
+            border: none;
+            color: #fff;
+            padding: 12px 40px;
+            border-radius: 50px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            background: #5865F2;
+        }
+        .discord-modal .btn-modal-join:hover {
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 10px 40px rgba(88, 101, 242, 0.25);
+            color: #fff;
+        }
+        .discord-modal .btn-modal-join.github {
+            background: #333;
+        }
+        .discord-modal .btn-modal-join.github:hover {
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.08);
+        }
+        .discord-modal .btn-modal-join.youtube {
+            background: #ff0000;
+        }
+        .discord-modal .btn-modal-join.youtube:hover {
+            box-shadow: 0 10px 40px rgba(255, 0, 0, 0.25);
+        }
+        .discord-modal .modal-icon {
+            font-size: 4rem;
+            margin-bottom: 12px;
+        }
+        .discord-modal .modal-icon.discord {
+            color: #5865F2;
+        }
+        .discord-modal .modal-icon.github {
+            color: #fff;
+        }
+        .discord-modal .modal-icon.youtube {
+            color: #ff0000;
+        }
+
+        /* ===== ДОНАТ ===== */
+        .donate-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #fff;
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .donate-btn:hover {
+            transform: translateY(-4px) scale(1.03);
+            border-color: #f39c12;
+            color: #fff;
+        }
+        .donate-btn.da {
+            background: #121212;
+            border-color: #ff6b00;
+        }
+        .donate-btn.da:hover {
+            background: #ff6b00;
+            border-color: #ff6b00;
+        }
+        .donate-btn.star {
+            border-color: #f1c40f;
+        }
+        .donate-btn.star:hover {
+            background: #f1c40f;
+            border-color: #f1c40f;
+            color: #000;
+        }
+        .donate-btn.discord-donate {
+            border-color: #5865F2;
+        }
+        .donate-btn.discord-donate:hover {
+            background: #5865F2;
+            border-color: #5865F2;
+        }
+
+        /* ===== ПОДВАЛ ===== */
+        footer {
+            background: rgba(10, 10, 18, 0.9);
+            border-top: 2px solid rgba(230, 126, 34, 0.08);
+            padding: 30px 0;
+        }
+
+        /* ===== СКРОЛЛ ===== */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #e67e22, #f39c12);
+            border-radius: 10px;
+        }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 1.8rem;
+            }
+            .display-3 {
+                font-size: 2.2rem !important;
+            }
+            .project-card {
+                padding: 20px;
+            }
+            .project-page-card {
+                padding: 20px;
+            }
+        }
+        @media (max-width: 576px) {
+            .display-3 {
+                font-size: 1.6rem !important;
+            }
+            .btn-orange,
+            .btn-outline-orange {
+                width: 100%;
+            }
+            .d-flex.gap-3 {
+                flex-direction: column;
+            }
+            .discord-modal {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== ПРЕЛОАДЕР ===== -->
+    <div id="preloader">
+        <div style="text-align:center;">
+            <div class="preloader-logo">Cube<span>Fusion</span></div>
+            <div style="margin-top: 20px;">
+                <span class="preloader-particle"></span>
+                <span class="preloader-particle"></span>
+                <span class="preloader-particle"></span>
+            </div>
+            <p class="preloader-text">Загрузка...</p>
+        </div>
+    </div>
+
+    <!-- ===== ВИДЕО-ФОН (ЗАГЛУШКА) ===== -->
+    <video id="bgVideo" autoplay muted loop playsinline>
+        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+    </video>
+
+    <!-- ===== СВЕЧЕНИЕ ===== -->
+    <div id="globalGlow"></div>
+
+    <!-- ===== ЧАСТИЦЫ ===== -->
+    <canvas id="particlesCanvas"></canvas>
+
+    <!-- ===== МОДАЛКИ ===== -->
+
+    <!-- DISCORD -->
+    <div class="discord-modal-overlay" id="discordModal">
+        <div class="discord-modal">
+            <button class="discord-modal-close" id="discordModalClose"><i class="fas fa-times"></i></button>
+            <div class="modal-icon discord"><i class="fab fa-discord"></i></div>
+            <h3 class="fw-bold text-white">Присоединяйся!</h3>
+            <p class="text-white-50" style="font-size:0.95rem;">Общайся с командой, следи за новостями и участвуй в жизни проектов CubeFusion.</p>
+            <a href="https://dsc.gg/cubefusion" target="_blank" class="btn-modal-join"><i class="fab fa-discord me-2"></i> Перейти в Discord</a>
+        </div>
+    </div>
+
+    <!-- GITHUB -->
+    <div class="discord-modal-overlay" id="githubModal">
+        <div class="discord-modal">
+            <button class="discord-modal-close" id="githubModalClose"><i class="fas fa-times"></i></button>
+            <div class="modal-icon github"><i class="fab fa-github"></i></div>
+            <h3 class="fw-bold text-white">Исходный код</h3>
+            <p class="text-white-50" style="font-size:0.95rem;">Все проекты CubeFusion с открытым исходным кодом на GitHub.</p>
+            <a href="https://github.com/GAMER123TOP/Binders_RP_Roblox" target="_blank" class="btn-modal-join github"><i class="fab fa-github me-2"></i> Перейти на GitHub</a>
+        </div>
+    </div>
+
+    <!-- YOUTUBE -->
+    <div class="discord-modal-overlay" id="youtubeModal">
+        <div class="discord-modal">
+            <button class="discord-modal-close" id="youtubeModalClose"><i class="fas fa-times"></i></button>
+            <div class="modal-icon youtube"><i class="fab fa-youtube"></i></div>
+            <h3 class="fw-bold text-white">Наш YouTube</h3>
+            <p class="text-white-50" style="font-size:0.95rem;">Видео, обновления, гайды и новости проектов.</p>
+            <a href="https://www.youtube.com/@CubeFusionStudio" target="_blank" class="btn-modal-join youtube"><i class="fab fa-youtube me-2"></i> Перейти на YouTube</a>
+        </div>
+    </div>
+
+    <!-- ===== ШАПКА ===== -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top navbar-glass" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-2" href="#">
+                <span class="text-gradient">Cube</span><span class="text-white">Fusion</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav gap-1 gap-lg-2">
+                    <li class="nav-item"><a class="nav-link nav-link-custom active" href="#about"><i class="fas fa-home"></i> Главная</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#projects"><i class="fas fa-cubes"></i> Проекты</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#binders-page"><i class="fas fa-terminal"></i> Binders RP</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#kemerovo-page"><i class="fas fa-city"></i> Кемерово РП</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#faq"><i class="fas fa-question-circle"></i> FAQ</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#donate"><i class="fas fa-heart"></i> Донат</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#contacts"><i class="fas fa-envelope"></i> Контакты</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== ГЛАВНАЯ ===== -->
+    <section class="hero-section anchor-offset" id="about">
+        <div class="container hero-content py-5">
+            <div class="row">
+                <div class="col-lg-8">
+                    <span class="badge-base mb-3"><i class="fas fa-cube me-2"></i> Студия разработки</span>
+                    <h1 class="display-3 fw-bold text-white mb-3">СОЗДАЁМ <br><span class="text-gradient-glow">ИГРОВЫЕ ЭКОСИСТЕМЫ</span></h1>
+                    <p class="fs-5 text-white-50 mb-4" style="max-width: 600px; line-height: 1.8;">
+                        CubeFusion — студия, которая разрабатывает инструменты для RP-сообществ. Наши проекты помогают тысячам игроков погружаться в виртуальные миры.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="#projects" class="btn btn-orange btn-lg px-5 py-3 fw-bold text-uppercase"><i class="fas fa-cubes me-2"></i> <span>Наши проекты</span></a>
+                        <button class="btn btn-outline-orange btn-lg px-5 py-3 fw-bold text-uppercase" id="discordModalOpen"><i class="fab fa-discord me-2"></i> Discord</button>
+                    </div>
+
+                    <!-- СЧЁТЧИК СКАЧИВАНИЙ (ЗАГЛУШКА) -->
+                    <div class="download-counter mt-4">
+                        <i class="fas fa-download" style="color: #f39c12;"></i>
+                        Скачиваний: <span class="num" id="downloadCount">1,234</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ПРОЕКТЫ ===== -->
+    <section class="py-5 anchor-offset section-bg" id="projects" style="background: rgba(10,10,18,0.4); backdrop-filter: blur(10px);">
+        <div class="container my-4">
+            <div class="text-center mb-5">
+                <h2 class="section-title text-white">НАШИ <span class="text-gradient">ПРОЕКТЫ</span></h2>
+                <p class="text-white-50 fs-5">Что мы создаём для RP-сообществ</p>
+            </div>
+            <div class="row g-4">
+                <!-- Binders RP -->
+                <div class="col-12 col-md-6">
+                    <a href="#binders-page" style="text-decoration: none; color: inherit;">
+                        <div class="project-card">
+                            <span class="project-status active"><i class="fas fa-circle me-1" style="font-size: 0.4rem;"></i> Активный</span>
+                            <span class="project-icon"><i class="fas fa-terminal" style="color: #f39c12;"></i></span>
+                            <h3 class="fw-bold text-white">Binders RP</h3>
+                            <p class="text-white-50" style="font-size:0.95rem;">Программа на AHK для RP-отыгровок. Шпаргалка, автообновление макросов, поддержка всех фракций.</p>
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+                                <span class="badge bg-dark text-white-50" style="border:1px solid rgba(255,255,255,0.05);">AHK</span>
+                                <span class="badge bg-dark text-white-50" style="border:1px solid rgba(255,255,255,0.05);">Discord</span>
+                                <span class="badge bg-dark text-white-50" style="border:1px solid rgba(255,255,255,0.05);">Roblox</span>
+                            </div>
+                            <span class="btn btn-outline-orange btn-sm mt-3 px-4" style="pointer-events: none;">Подробнее <i class="fas fa-arrow-right ms-1"></i></span>
+                        </div>
+                    </a>
+                </div>
+                <!-- Кемерово РП -->
+                <div class="col-12 col-md-6">
+                    <a href="#kemerovo-page" style="text-decoration: none; color: inherit;">
+                        <div class="project-card" style="opacity:0.7;">
+                            <span class="project-status deleted"><i class="fas fa-circle me-1" style="font-size: 0.4rem;"></i> Удалён</span>
+                            <span class="project-icon"><i class="fas fa-city" style="color: #6b7280;"></i></span>
+                            <h3 class="fw-bold text-white">Кемерово РП</h3>
+                            <p class="text-white-50" style="font-size:0.95rem;">RP-проект на базе Roblox. Разработка остановлена, проект полностью удалён.</p>
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+                                <span class="badge bg-dark text-white-50" style="border:1px solid rgba(255,255,255,0.05);">Roblox</span>
+                                <span class="badge bg-dark text-white-50" style="border:1px solid rgba(255,255,255,0.05);">Удалён</span>
+                            </div>
+                            <span class="btn btn-outline-light-orange btn-sm mt-3 px-4" style="opacity:0.4; pointer-events: none;">Подробнее <i class="fas fa-arrow-right ms-1"></i></span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== СТРАНИЦА BINDERS RP ===== -->
+    <section class="py-5 anchor-offset section-bg" id="binders-page" style="background: rgba(10,10,18,0.4); backdrop-filter: blur(10px);">
+        <div class="container my-4">
+            <div class="text-center mb-5">
+                <h2 class="section-title text-white">BINDERS <span class="text-gradient">RP</span></h2>
+                <p class="text-white-50 fs-5">Программа на AHK для быстрых отыгровок</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="project-page-card">
+                        <div class="row align-items-center">
+                            <div class="col-lg-8">
+                                <span class="project-status active mb-2 d-inline-block"><i class="fas fa-circle me-1" style="font-size: 0.4rem;"></i> Активный</span>
+                                <h3 class="fw-bold text-white mt-2">Binders RP — программа для RP-отыгровок</h3>
+                                <p class="text-white-50" style="font-size:1rem; line-height:1.8;">
+                                    Binders RP — это программа на <strong class="text-white">AutoHotkey</strong>, которая позволяет быстро отправлять готовые фразы в чат Roblox.
+                                    Она создана для упрощения отыгровок на RP-серверах и включает в себя:
+                                </p>
+                                <ul class="text-white-50" style="list-style: none; padding-left: 0; font-size:0.95rem;">
+                                    <li><i class="fas fa-check-circle" style="color: #f39c12; margin-right: 10px;"></i> <strong class="text-white">Шпаргалка (КПК)</strong> — все кодексы и законы в одном месте, доступны по Win+J.</li>
+                                    <li><i class="fas fa-check-circle" style="color: #f39c12; margin-right: 10px;"></i> <strong class="text-white">Автообновление макросов</strong> — скрипты обновляются автоматически при запуске.</li>
+                                    <li><i class="fas fa-check-circle" style="color: #f39c12; margin-right: 10px;"></i> <strong class="text-white">Все фракции</strong> — МВД, СМП, МЧС, ВНГ, ОПГ, ФСБ — готовые макросы для каждой.</li>
+                                    <li><i class="fas fa-check-circle" style="color: #f39c12; margin-right: 10px;"></i> <strong class="text-white">Логирование в Discord</strong> — сбор анонимной статистики для улучшения программы.</li>
+                                    <li><i class="fas fa-check-circle" style="color: #f39c12; margin-right: 10px;"></i> <strong class="text-white">Поддержка трёх серверов</strong> — Зареченск, Кемерово, Провинция.</li>
+                                </ul>
+                                <div class="d-flex flex-wrap gap-2 mt-3">
+                                    <span class="faction-badge"><i class="fas fa-shield-halved" style="color:#ef4444;"></i> МВД</span>
+                                    <span class="faction-badge"><i class="fas fa-heartbeat" style="color:#22c55e;"></i> СМП</span>
+                                    <span class="faction-badge"><i class="fas fa-fire-extinguisher" style="color:#f39c12;"></i> МЧС</span>
+                                    <span class="faction-badge"><i class="fas fa-shield" style="color:#3b82f6;"></i> ВНГ</span>
+                                    <span class="faction-badge"><i class="fas fa-skull" style="color:#6b7280;"></i> ОПГ</span>
+                                    <span class="faction-badge"><i class="fas fa-user-secret" style="color:#8b5cf6;"></i> ФСБ</span>
+                                </div>
+                                <div class="mt-4 d-flex flex-wrap gap-3">
+                                    <a href="#" class="btn btn-orange"><i class="fas fa-download me-2"></i> Скачать лаунчер</a>
+                                    <a href="#projects" class="btn btn-outline-orange"><i class="fas fa-arrow-left me-2"></i> Назад к проектам</a>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
+                                <div style="font-size: 6rem; color: #f39c12;"><i class="fas fa-terminal"></i></div>
+                                <p class="text-white-50 small">Версия <strong class="text-white">v2.6.0</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== СТРАНИЦА КЕМЕРОВО РП ===== -->
+    <section class="py-5 anchor-offset section-bg" id="kemerovo-page" style="background: rgba(10,10,18,0.4); backdrop-filter: blur(10px);">
+        <div class="container my-4">
+            <div class="text-center mb-5">
+                <h2 class="section-title text-white">КЕМЕРОВО <span class="text-gradient" style="color: #6b7280;">РП</span></h2>
+                <p class="text-white-50 fs-5">Проект закрыт</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="project-page-card" style="opacity:0.6;">
+                        <div class="row align-items-center">
+                            <div class="col-lg-8">
+                                <span class="project-status deleted mb-2 d-inline-block"><i class="fas fa-circle me-1" style="font-size: 0.4rem;"></i> Удалён</span>
+                                <h3 class="fw-bold text-white mt-2">Кемерово РП — проект закрыт</h3>
+                                <p class="text-white-50" style="font-size:1rem; line-height:1.8;">
+                                    RP-проект на базе Roblox. Разработка была остановлена, а проект полностью удалён.
+                                    На данный момент проект не поддерживается и не доступен для игры.
+                                </p>
+                                <div class="mt-4">
+                                    <span class="badge bg-danger text-white me-2"><i class="fas fa-exclamation-triangle me-1"></i> Закрыт</span>
+                                    <span class="badge bg-secondary text-white"><i class="fas fa-archive me-1"></i> Удалён</span>
+                                </div>
+                                <div class="mt-4">
+                                    <a href="#projects" class="btn btn-outline-orange"><i class="fas fa-arrow-left me-2"></i> Назад к проектам</a>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
+                                <div style="font-size: 6rem; color: #6b7280;"><i class="fas fa-city"></i></div>
+                                <p class="text-white-50 small">Статус: <strong class="text-danger">Удалён</strong></p>
+                            </div>
+                        </div>
+
+                        <!-- ===== ГАЛЕРЕЯ ===== -->
+                        <div class="mt-5 pt-3">
+                            <h4 class="fw-bold text-white mb-3"><i class="fas fa-images me-2" style="color: #6b7280;"></i> Скриншоты из Кемерово РП</h4>
+                            <p class="text-white-50 small">Проект был закрыт из-за новых правил Roblox для разработчиков, но мы сохранили память о нём.</p>
+                            <div class="row g-3 mt-2">
+                                <div class="col-6 col-md-3">
+                                    <a href="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%201.png" target="_blank" style="text-decoration: none; color: inherit;">
+                                        <img src="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%201.png" class="img-fluid rounded-4" alt="Вокзал" style="border:1px solid rgba(255,255,255,0.06); width:100%; height:auto; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <p class="text-white-50 small mt-1 text-center" style="font-size: 0.75rem;">Вокзал</p>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%202.png" target="_blank" style="text-decoration: none; color: inherit;">
+                                        <img src="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%202.png" class="img-fluid rounded-4" alt="ГАИшник" style="border:1px solid rgba(255,255,255,0.06); width:100%; height:auto; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <p class="text-white-50 small mt-1 text-center" style="font-size: 0.75rem;">ГАИшник на фоне прокуратуры и с. Мазурово</p>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%203.png" target="_blank" style="text-decoration: none; color: inherit;">
+                                        <img src="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%203.png" class="img-fluid rounded-4" alt="Штурм ФСБ" style="border:1px solid rgba(255,255,255,0.06); width:100%; height:auto; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <p class="text-white-50 small mt-1 text-center" style="font-size: 0.75rem;">Штурм ФСБ в с. Мазурово</p>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%204.png" target="_blank" style="text-decoration: none; color: inherit;">
+                                        <img src="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%204.png" class="img-fluid rounded-4" alt="Тушение пожара" style="border:1px solid rgba(255,255,255,0.06); width:100%; height:auto; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <p class="text-white-50 small mt-1 text-center" style="font-size: 0.75rem;">Тушение пожара МЧСником</p>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%205.png" target="_blank" style="text-decoration: none; color: inherit;">
+                                        <img src="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%205.png" class="img-fluid rounded-4" alt="Гражданин с машиной" style="border:1px solid rgba(255,255,255,0.06); width:100%; height:auto; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <p class="text-white-50 small mt-1 text-center" style="font-size: 0.75rem;">Гражданин с машиной</p>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%206.png" target="_blank" style="text-decoration: none; color: inherit;">
+                                        <img src="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%206.png" class="img-fluid rounded-4" alt="Чипсы" style="border:1px solid rgba(255,255,255,0.06); width:100%; height:auto; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <p class="text-white-50 small mt-1 text-center" style="font-size: 0.75rem;">Гражданин берёт чипсы с полки</p>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%207.png" target="_blank" style="text-decoration: none; color: inherit;">
+                                        <img src="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%207.png" class="img-fluid rounded-4" alt="Город на солнце" style="border:1px solid rgba(255,255,255,0.06); width:100%; height:auto; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <p class="text-white-50 small mt-1 text-center" style="font-size: 0.75rem;">Город на фоне солнца</p>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%208.png" target="_blank" style="text-decoration: none; color: inherit;">
+                                        <img src="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/Фотка%208.png" class="img-fluid rounded-4" alt="Город ночью" style="border:1px solid rgba(255,255,255,0.06); width:100%; height:auto; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <p class="text-white-50 small mt-1 text-center" style="font-size: 0.75rem;">Город на фоне ночного неба</p>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/фото%20ВЧ.png" target="_blank" style="text-decoration: none; color: inherit;">
+                                        <img src="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/фото%20ВЧ.png" class="img-fluid rounded-4" alt="ВЧ" style="border:1px solid rgba(255,255,255,0.06); width:100%; height:auto; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <p class="text-white-50 small mt-1 text-center" style="font-size: 0.75rem;">ВЧ</p>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/фото%20ФСИН%20на%20фоне%20ночного%20неба.png" target="_blank" style="text-decoration: none; color: inherit;">
+                                        <img src="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/фото%20ФСИН%20на%20фоне%20ночного%20неба.png" class="img-fluid rounded-4" alt="ФСИН ночью" style="border:1px solid rgba(255,255,255,0.06); width:100%; height:auto; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <p class="text-white-50 small mt-1 text-center" style="font-size: 0.75rem;">ФСИН на фоне ночного неба</p>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/фото%20закат%20на%20фоне%20леса.png" target="_blank" style="text-decoration: none; color: inherit;">
+                                        <img src="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/фото%20закат%20на%20фоне%20леса.png" class="img-fluid rounded-4" alt="Закат" style="border:1px solid rgba(255,255,255,0.06); width:100%; height:auto; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <p class="text-white-50 small mt-1 text-center" style="font-size: 0.75rem;">Закат на фоне леса</p>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/фото%20луна%20на%20фоне%20города.png" target="_blank" style="text-decoration: none; color: inherit;">
+                                        <img src="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/фото%20луна%20на%20фоне%20города.png" class="img-fluid rounded-4" alt="Луна" style="border:1px solid rgba(255,255,255,0.06); width:100%; height:auto; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <p class="text-white-50 small mt-1 text-center" style="font-size: 0.75rem;">Луна на фоне города</p>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/фото%20мемориал%20ВОВ.png" target="_blank" style="text-decoration: none; color: inherit;">
+                                        <img src="https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/фото%20мемориал%20ВОВ.png" class="img-fluid rounded-4" alt="Мемориал ВОВ" style="border:1px solid rgba(255,255,255,0.06); width:100%; height:auto; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <p class="text-white-50 small mt-1 text-center" style="font-size: 0.75rem;">Мемориал ВОВ возле вокзала</p>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- КОНЕЦ ГАЛЕРЕИ -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== БЛОГ / НОВОСТИ (ИЗ DISCORD) ===== -->
+    <section class="py-5 anchor-offset section-bg" id="blog" style="background: rgba(10,10,18,0.4); backdrop-filter: blur(10px);">
+        <div class="container my-4">
+            <div class="text-center mb-5">
+                <h2 class="section-title text-white">ПОСЛЕДНИЕ <span class="text-gradient">НОВОСТИ</span></h2>
+                <p class="text-white-50 fs-5">Обновления проекта</p>
+            </div>
+            <div class="row g-4 justify-content-center">
+                <div class="col-12 col-md-6">
+                    <div class="project-card">
+                        <span class="badge bg-warning text-dark mb-2"><i class="far fa-calendar-alt me-1"></i> 21 июля 2026</span>
+                        <h5 class="fw-bold text-white">Версия 2.6.0 вышла!</h5>
+                        <p class="text-white-50">Добавлены логи в Discord, HWID-идентификация, улучшена стабильность.</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="project-card">
+                        <span class="badge bg-warning text-dark mb-2"><i class="far fa-calendar-alt me-1"></i> 15 июля 2026</span>
+                        <h5 class="fw-bold text-white">Настройка клавиш</h5>
+                        <p class="text-white-50">Теперь можно менять горячие клавиши прямо в лаунчере.</p>
+                    </div>
+                </div>
+                <div class="col-12 text-center mt-3">
+                    <a href="https://github.com/GAMER123TOP/Binders_RP_Roblox/releases" target="_blank" class="btn btn-outline-orange">Все новости →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section class="py-5 anchor-offset section-bg" id="faq" style="background: rgba(7,7,14,0.5); backdrop-filter: blur(10px);">
+        <div class="container my-4">
+            <div class="text-center mb-5">
+                <h2 class="section-title text-white">ЧАСТО <span class="text-gradient">ЗАДАВАЕМЫЕ ВОПРОСЫ</span></h2>
+                <p class="text-white-50 fs-5">Всё, что нужно знать о лаунчере</p>
+            </div>
+            <div class="row g-3 justify-content-center">
+                <div class="col-12 col-md-8">
+                    <div class="faq-card" onclick="this.classList.toggle('open')">
+                        <div class="faq-q">
+                            <span>Как установить лаунчер?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-a">Скачай последнюю версию из релизов на GitHub, распакуй архив и запусти Launcher.exe.</div>
+                    </div>
+                    <div class="faq-card" onclick="this.classList.toggle('open')">
+                        <div class="faq-q">
+                            <span>Почему не работают макросы?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-a">Убедись, что запускаешь лаунчер от имени администратора и выбрана правильная игра/фракция.</div>
+                    </div>
+                    <div class="faq-card" onclick="this.classList.toggle('open')">
+                        <div class="faq-q">
+                            <span>Как изменить горячие клавиши?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-a">В лаунчере есть кнопка «Настройки клавиш» — там можно переназначить любые бинды.</div>
+                    </div>
+                    <div class="faq-card" onclick="this.classList.toggle('open')">
+                        <div class="faq-q">
+                            <span>Это безопасно? Не забанят?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-a">Макросы не нарушают правила Roblox, но используй на свой страх и риск. Баны крайне редки.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ДОНАТ ===== -->
+    <section class="py-5 anchor-offset section-bg" id="donate" style="background: rgba(10,10,18,0.3); backdrop-filter: blur(10px);">
+        <div class="container my-4">
+            <div class="text-center mb-5">
+                <h2 class="section-title text-white">ПОДДЕРЖАТЬ <span class="text-gradient">ПРОЕКТ</span></h2>
+                <p class="text-white-50 fs-5">Спасибо, что помогаешь развитию!</p>
+            </div>
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                <a href="https://www.donationalerts.com/r/gamer123top" target="_blank" class="donate-btn da">
+                    <i class="fas fa-heart" style="color: #ff6b00;"></i> DonationAlerts
+                </a>
+                <a href="https://github.com/GAMER123TOP/Binders_RP_Roblox" target="_blank" class="donate-btn star">
+                    <i class="fas fa-star" style="color: #f1c40f;"></i> Поставить звезду на GitHub
+                </a>
+                <button class="donate-btn discord-donate" id="discordModalOpen3">
+                    <i class="fab fa-discord" style="color: #5865F2;"></i> Вступить в Discord
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== КОНТАКТЫ ===== -->
+    <section class="py-5 anchor-offset section-bg" id="contacts" style="background: rgba(10,10,18,0.3); backdrop-filter: blur(10px);">
+        <div class="container my-4">
+            <div class="text-center mb-5">
+                <h2 class="section-title text-white">СВЯЖИСЬ С <span class="text-gradient">НАМИ</span></h2>
+                <p class="text-white-50 fs-5">Мы всегда на связи</p>
+            </div>
+            <div class="row g-4 justify-content-center">
+                <div class="col-12 col-md-3">
+                    <button class="project-card text-center d-block" style="text-decoration:none; color:#fff; padding:24px 16px; cursor:pointer; border:none; width:100%; background:rgba(255,255,255,0.03);" id="discordModalOpen2">
+                        <div style="font-size:2.8rem; color:#5865F2;"><i class="fab fa-discord"></i></div>
+                        <h5 class="fw-bold mt-3">Discord</h5>
+                        <p class="text-white-50 small">Основной канал</p>
+                    </button>
+                </div>
+                <div class="col-12 col-md-3">
+                    <button class="project-card text-center d-block" style="text-decoration:none; color:#fff; padding:24px 16px; cursor:pointer; border:none; width:100%; background:rgba(255,255,255,0.03);" id="githubModalOpen">
+                        <div style="font-size:2.8rem; color:#fff;"><i class="fab fa-github"></i></div>
+                        <h5 class="fw-bold mt-3">GitHub</h5>
+                        <p class="text-white-50 small">Исходный код</p>
+                    </button>
+                </div>
+                <div class="col-12 col-md-3">
+                    <button class="project-card text-center d-block" style="text-decoration:none; color:#fff; padding:24px 16px; cursor:pointer; border:none; width:100%; background:rgba(255,255,255,0.03);" id="youtubeModalOpen">
+                        <div style="font-size:2.8rem; color:#ff0000;"><i class="fab fa-youtube"></i></div>
+                        <h5 class="fw-bold mt-3">YouTube</h5>
+                        <p class="text-white-50 small">Видео и обновления</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ПОДВАЛ ===== -->
+    <footer>
+        <div class="container text-center">
+            <p class="text-white-50 small">&copy; 2026 CubeFusion. Студия разработки игровых инструментов.</p>
+            <p class="text-white-50 small" style="font-size:0.65rem; opacity:0.4;">
+                <i class="fas fa-cube me-1"></i> Сделано с ❤️ для RP-сообществ
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // ===== ПРЕЛОАДЕР =====
+            const preloader = document.getElementById('preloader');
+            setTimeout(() => { preloader.classList.add('hidden'); }, 2200);
+
+            // ===== СЧЁТЧИК СКАЧИВАНИЙ (ЗАГЛУШКА) =====
+            // Потом заменишь на реальный API GitHub Releases
+            // fetch('https://api.github.com/repos/GAMER123TOP/Binders_RP_Roblox/releases/latest')
+            //   .then(r => r.json())
+            //   .then(data => {
+            //     document.getElementById('downloadCount').textContent = data.assets.reduce((sum, a) => sum + a.download_count, 0).toLocaleString();
+            //   });
+
+            // ===== СВЕЧЕНИЕ =====
+            const glow = document.getElementById('globalGlow');
+            document.addEventListener('mousemove', function(e) {
+                glow.style.left = e.clientX + 'px';
+                glow.style.top = e.clientY + 'px';
+                glow.classList.add('active');
+            });
+            document.addEventListener('mouseleave', function() { glow.classList.remove('active'); });
+
+            // ===== ЧАСТИЦЫ =====
+            const canvas = document.getElementById('particlesCanvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            const particles = [];
+            const count = 70;
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.size = Math.random() * 3 + 0.5;
+                    this.speedX = (Math.random() - 0.5) * 0.2;
+                    this.speedY = (Math.random() - 0.5) * 0.2;
+                    this.opacity = Math.random() * 0.6 + 0.2;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) this.reset();
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(243, 156, 18, ${this.opacity})`;
+                    ctx.shadowColor = 'rgba(243, 156, 18, 0.15)';
+                    ctx.shadowBlur = 6;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+            for (let i = 0; i < count; i++) particles.push(new Particle());
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach(p => { p.update();
+                    p.draw(); });
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            // ===== МОДАЛКИ =====
+
+            // DISCORD
+            const discordModal = document.getElementById('discordModal');
+            const discordOpenBtns = document.querySelectorAll('#discordModalOpen, #discordModalOpen2, #discordModalOpen3');
+            const discordCloseBtn = document.getElementById('discordModalClose');
+
+            function openDiscord() {
+                discordModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeDiscord() {
+                discordModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            discordOpenBtns.forEach(btn => btn.addEventListener('click', openDiscord));
+            discordCloseBtn.addEventListener('click', closeDiscord);
+            discordModal.addEventListener('click', function(e) { if (e.target === this) closeDiscord(); });
+            document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDiscord(); });
+
+            // GITHUB
+            const githubModal = document.getElementById('githubModal');
+            const githubOpenBtn = document.getElementById('githubModalOpen');
+            const githubCloseBtn = document.getElementById('githubModalClose');
+
+            function openGithub() {
+                githubModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeGithub() {
+                githubModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            githubOpenBtn.addEventListener('click', openGithub);
+            githubCloseBtn.addEventListener('click', closeGithub);
+            githubModal.addEventListener('click', function(e) { if (e.target === this) closeGithub(); });
+            document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeGithub(); });
+
+            // YOUTUBE
+            const youtubeModal = document.getElementById('youtubeModal');
+            const youtubeOpenBtn = document.getElementById('youtubeModalOpen');
+            const youtubeCloseBtn = document.getElementById('youtubeModalClose');
+
+            function openYoutube() {
+                youtubeModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeYoutube() {
+                youtubeModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            youtubeOpenBtn.addEventListener('click', openYoutube);
+            youtubeCloseBtn.addEventListener('click', closeYoutube);
+            youtubeModal.addEventListener('click', function(e) { if (e.target === this) closeYoutube(); });
+            document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeYoutube(); });
+
+            // ===== ПЛАВНАЯ ПРОКРУТКА =====
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        e.preventDefault();
+                        const navbarHeight = document.querySelector('.navbar-glass').offsetHeight || 76;
+                        const pos = target.getBoundingClientRect().top + window.pageYOffset - navbarHeight -
+                            20;
+                        window.scrollTo({ top: pos, behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // ===== АНИМАЦИЯ ПРИ СКРОЛЛЕ =====
+            const animElements = document.querySelectorAll('.project-card, .project-page-card, .faq-card, .donate-btn');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0) scale(1)';
+                    }
+                });
+            }, { threshold: 0.05, rootMargin: '0px 0px -50px 0px' });
+            animElements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(40px) scale(0.95)';
+                el.style.transition = 'all 0.8s cubic-bezier(0.23,1,0.32,1)';
+                el.style.transitionDelay = (index * 60) + 'ms';
+                observer.observe(el);
+            });
+            setTimeout(() => {
+                animElements.forEach((el, index) => {
+                    setTimeout(() => {
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0) scale(1)';
+                    }, index * 60 + 200);
+                });
+            }, 300);
+
+            // ===== АКТИВНЫЙ ПУНКТ МЕНЮ =====
+            const sections = document.querySelectorAll('.anchor-offset');
+            const links = document.querySelectorAll('.nav-link-custom');
+            window.addEventListener('scroll', function() {
+                let current = '';
+                const scrollPos = window.scrollY + 120;
+                sections.forEach(s => {
+                    if (scrollPos >= s.offsetTop) current = s.getAttribute('id');
+                });
+                links.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+                });
+                const nav = document.getElementById('mainNav');
+                if (window.scrollY > 50) nav.classList.add('scrolled');
+                else nav.classList.remove('scrolled');
+            });
+
+            // ===== FAQ (открытие/закрытие) =====
+            document.querySelectorAll('.faq-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    this.classList.toggle('open');
+                });
+            });
+
+        });
+    </script>
+
+</body>
+</html>
