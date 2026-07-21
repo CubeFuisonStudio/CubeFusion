@@ -223,8 +223,8 @@
             position: absolute;
             inset: 0;
             background: radial-gradient(ellipse at 30% 50%, rgba(10, 10, 18, 0.2) 0%, rgba(10, 10, 18, 0.6) 100%),
-                url('https://via.placeholder.com/1920x1080/1a1a2e/1a1a2e') center/cover no-repeat;
-            filter: blur(2px) brightness(0.8);
+                url('https://raw.githubusercontent.com/CubeFuisonStudio/CubeFusion/assets/bg.jpg') center/cover no-repeat;
+            filter: blur(2px) brightness(0.6);
             z-index: 0;
         }
         .hero-content {
@@ -885,7 +885,7 @@
                                     <span class="faction-badge"><i class="fas fa-user-secret" style="color:#8b5cf6;"></i> ФСБ</span>
                                 </div>
                                 <div class="mt-4 d-flex flex-wrap gap-3">
-                                    <a href="#" class="btn btn-orange"><i class="fas fa-download me-2"></i> Скачать лаунчер</a>
+                                    <a href="https://github.com/GAMER123TOP/Binders_RP_Roblox/releases/latest" target="_blank" class="btn btn-orange"><i class="fas fa-download me-2"></i> Скачать лаунчер</a>
                                     <a href="#projects" class="btn btn-outline-orange"><i class="fas fa-arrow-left me-2"></i> Назад к проектам</a>
                                 </div>
                             </div>
@@ -1069,8 +1069,43 @@
             const preloader = document.getElementById('preloader');
             setTimeout(() => { preloader.classList.add('hidden'); }, 2200);
 
-            // ===== СЧЁТЧИК СКАЧИВАНИЙ (ЗАГЛУШКА) =====
-            // Потом заменишь на реальный API GitHub Releases
+            // ===== СЧЁТЧИК СКАЧИВАНИЙ (ИСПРАВЛЕН) =====
+            async function fetchDownloads() {
+                const counterElement = document.getElementById('downloadCount');
+                if (counterElement) {
+                    counterElement.textContent = '...';
+                }
+
+                try {
+                    const response = await fetch('https://api.github.com/repos/GAMER123TOP/Binders_RP_Roblox/releases/latest');
+
+                    if (!response.ok) {
+                        throw new Error(`Ошибка HTTP: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    let totalDownloads = 0;
+                    if (data.assets && data.assets.length > 0) {
+                        data.assets.forEach(asset => {
+                            totalDownloads += asset.download_count || 0;
+                        });
+                    }
+
+                    if (counterElement) {
+                        counterElement.textContent = totalDownloads.toLocaleString();
+                    }
+
+                } catch (error) {
+                    console.error('Не удалось загрузить количество скачиваний:', error);
+                    if (counterElement) {
+                        counterElement.textContent = '?';
+                    }
+                }
+            }
+
+            // ВЫЗЫВАЕМ СЧЁТЧИК
+            fetchDownloads();
 
             // ===== СВЕЧЕНИЕ =====
             const glow = document.getElementById('globalGlow');
