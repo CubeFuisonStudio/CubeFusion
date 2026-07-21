@@ -559,19 +559,21 @@
             opacity: 0;
             visibility: hidden;
             transition: all 0.4s ease;
-            cursor: zoom-out;
+            cursor: default;
         }
         #lightbox.active {
             opacity: 1;
             visibility: visible;
         }
         #lightbox img {
-            max-width: 90%;
-            max-height: 90%;
+            max-width: 80%;
+            max-height: 80%;
             border-radius: 16px;
             box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
             transform: scale(0.9);
             transition: transform 0.4s ease;
+            cursor: default;
+            user-select: none;
         }
         #lightbox.active img {
             transform: scale(1);
@@ -589,6 +591,45 @@
         #lightbox .close-lightbox:hover {
             color: #fff;
             transform: rotate(90deg);
+        }
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border: none;
+            font-size: 3rem;
+            padding: 0 20px;
+            cursor: pointer;
+            z-index: 999999;
+            border-radius: 8px;
+            transition: 0.3s;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lightbox-nav:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+        .lightbox-prev {
+            left: 20px;
+        }
+        .lightbox-next {
+            right: 20px;
+        }
+        .lightbox-counter {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 6px 16px;
+            border-radius: 20px;
+            z-index: 999999;
         }
 
         /* ===== ПОДВАЛ ===== */
@@ -623,6 +664,17 @@
             }
             .project-page-card {
                 padding: 20px;
+            }
+            .lightbox-nav {
+                font-size: 2rem;
+                height: 60px;
+                padding: 0 12px;
+            }
+            .lightbox-prev {
+                left: 10px;
+            }
+            .lightbox-next {
+                right: 10px;
             }
         }
         @media (max-width: 576px) {
@@ -699,9 +751,12 @@
     </div>
 
     <!-- ===== LIGHTBOX ===== -->
-    <div id="lightbox" onclick="closeLightbox()">
+    <div id="lightbox" onclick="closeLightbox(event)">
         <span class="close-lightbox" onclick="closeLightbox()">&times;</span>
+        <button class="lightbox-nav lightbox-prev" onclick="changePhoto(-1)">‹</button>
         <img id="lightbox-img" src="" alt="Фото в полный размер">
+        <button class="lightbox-nav lightbox-next" onclick="changePhoto(1)">›</button>
+        <div class="lightbox-counter" id="lightbox-counter">1 / 13</div>
     </div>
 
     <!-- ===== ШАПКА ===== -->
@@ -1078,27 +1133,56 @@
             // ===== LIGHTBOX =====
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightbox-img');
+            const lightboxCounter = document.getElementById('lightbox-counter');
 
-            function openLightbox(src) {
-                lightboxImg.src = src;
+            let currentIndex = 0;
+            let galleryImages = [];
+
+            function updateGalleryList() {
+                galleryImages = [];
+                document.querySelectorAll('.gallery-img').forEach(img => {
+                    galleryImages.push(img.src);
+                });
+            }
+
+            function openLightbox(index) {
+                updateGalleryList();
+                currentIndex = index;
+                lightboxImg.src = galleryImages[currentIndex];
+                lightboxCounter.textContent = `${currentIndex + 1} / ${galleryImages.length}`;
                 lightbox.classList.add('active');
                 document.body.style.overflow = 'hidden';
             }
 
-            function closeLightbox() {
+            function closeLightbox(e) {
+                if (e && e.target !== e.currentTarget) return;
                 lightbox.classList.remove('active');
                 document.body.style.overflow = '';
             }
 
-            document.querySelectorAll('.gallery-img').forEach(img => {
+            function changePhoto(direction) {
+                currentIndex += direction;
+                if (currentIndex < 0) currentIndex = galleryImages.length - 1;
+                if (currentIndex >= galleryImages.length) currentIndex = 0;
+                lightboxImg.src = galleryImages[currentIndex];
+                lightboxCounter.textContent = `${currentIndex + 1} / ${galleryImages.length}`;
+            }
+
+            document.querySelectorAll('.gallery-img').forEach((img, index) => {
                 img.addEventListener('click', function(e) {
-                    openLightbox(this.src);
+                    e.stopPropagation();
+                    openLightbox(index);
                 });
             });
 
             document.addEventListener('keydown', function(e) {
+                if (!lightbox.classList.contains('active')) return;
+                if (e.key === 'ArrowLeft') changePhoto(-1);
+                if (e.key === 'ArrowRight') changePhoto(1);
                 if (e.key === 'Escape') closeLightbox();
             });
+
+            document.addEventListener('DOMContentLoaded', updateGalleryList);
 
             // ===== МОДАЛКИ =====
 
