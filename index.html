@@ -1077,7 +1077,7 @@
                 }
 
                 try {
-                    const response = await fetch('https://api.github.com/repos/GAMER123TOP/Binders_RP_Roblox/releases');
+                    const response = await fetch('https://api.github.com/repos/GAMER123TOP/Binders_RP_Roblox/releases/latest');
 
                     if (!response.ok) {
                         throw new Error(`Ошибка HTTP: ${response.status}`);
